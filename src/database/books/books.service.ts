@@ -5,7 +5,7 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 
 
-Injectable()
+@Injectable()
 export class BooksService {
     constructor(
         private initDataBase: InitDataBase
@@ -19,6 +19,7 @@ export class BooksService {
         if (validateError.length > 0) {
             throw new Error('Ошибка валидации, проверьте ваш JSON или обратитесь к администратору')
         }
+
 
         const sql = `
         INSERT INTO books(title, author, genre, publicationYear, available)
@@ -38,8 +39,18 @@ export class BooksService {
 
     }
 
-    async getBook() {
+    async getBook(bookId: number) {
+        const book = await this.initDataBase.sqlRequest(`
+        SELECT * FROM books
+        WHERE bookid = $1
+        `, [bookId]
+        )
 
+        if (!book?.length) {
+            throw new Error('Книги нет в наличии')
+        }
+
+        return book
     }
 
 }

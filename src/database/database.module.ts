@@ -5,12 +5,21 @@ import { CustomerService } from './customers/customers.service';
 import { CustomersCreateTable } from './customers/customers.сreate';
 import { RentalService } from './rentals/rentals.service';
 import { RentalsCreateTable } from './rentals/rentals.сreate';
+import { BooksController } from './books/books.conroller';
+import { CustomersController } from './customers/customer.conroller';
+import { RentalsController } from './rentals/rentals.conroller';
+import { InitDataBase } from './database.service';
 
 
 @Module({
     imports: [],
-    controllers: [],
+    controllers: [
+        BooksController,
+        CustomersController,
+        RentalsController,
+    ],
     providers: [
+        InitDataBase,
         BooksCreateTable,
         BooksService,
         CustomerService,

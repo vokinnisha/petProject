@@ -18,11 +18,12 @@ export class BooksEntity {
 
     @IsNotEmpty()
     @IsString()
-    genre: string // жанр книги
+    genre: string;// жанр книги
 
+    // @IsDate()
     @IsNotEmpty()
-    @IsDate()
-    publicationYear: Date; // дата публикации
+    @IsString()
+    publicationYear: string; // дата публикации
 
     @IsNotEmpty()
     @IsInt()

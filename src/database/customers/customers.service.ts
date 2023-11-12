@@ -5,10 +5,11 @@ import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 
 
-Injectable()
+@Injectable()
 export class CustomerService {
     constructor(
         private initDataBase: InitDataBase
+
     ) { }
 
     async createUser(rawUser: CustomersEntity) {
@@ -21,7 +22,7 @@ export class CustomerService {
         }
 
         const sql = `
-        INSERT INTO books(firstName, lastName, birthDate, email, phone, socialLogin)
+        INSERT INTO customers(firstName, lastName, birthDate, email, phone, socialLogin)
         VALUES($1, $2, $3, $4, $5, $6)
         RETURNING *
         `
@@ -38,8 +39,17 @@ export class CustomerService {
 
     }
 
-    async getUser() {
+    async getUser(customerId: number) {
+        const customer = await this.initDataBase.sqlRequest(`
+        SELECT * FROM customers
+        WHERE customerId = $1
+        `, [customerId]
+        )
 
+        if (!customer?.length) {
+            throw new Error('Пользователь не создан')
+        }
+        return customer
     }
 
 }

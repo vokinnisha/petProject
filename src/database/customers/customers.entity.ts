@@ -16,7 +16,7 @@ export class CustomersEntity {
 
     @IsNotEmpty()
     @IsString()
-    email: string // почта
+    email: string; // почта
 
     @IsNotEmpty()
     @IsString()
@@ -27,6 +27,6 @@ export class CustomersEntity {
     socialLogin: string;  // Логин соц-сети
 
     @IsNotEmpty()
-    @IsDate()
-    birthDate: Date
+    @IsString()
+    birthDate: string;
 }

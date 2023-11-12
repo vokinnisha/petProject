@@ -14,11 +14,13 @@ export class RentalsEntity {
     @IsInt()
     customerId: number; // айди пользователя (foreign key)
 
+    @IsString()
     @IsNotEmpty()
-    @IsDate()
-    dateRented: Date // Дата сдачи в аренду
+    // @IsDate()
+    dateRented: string; // Дата сдачи в аренду
 
+    @IsString()
     @IsNotEmpty()
-    @IsDate()
-    dateReturned: Date; // Дата возврата
+    // @IsDate()
+    dateReturned: string; // Дата возврата
 }

@@ -3,13 +3,16 @@ import { InitDataBase } from '../database.service';
 import { RentalsEntity } from './rentals.entity';
 import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
-import { Utils } from '../utils/utils';
+import { CustomerService } from '../customers/customers.service';
+import { BooksService } from '../books/books.service';
 
-Injectable()
+@Injectable()
 export class RentalService {
     constructor(
         private initDataBase: InitDataBase,
-        private utils: Utils
+        private customersService: CustomerService,
+        private booksService: BooksService
+
     ) { }
 
     async rentBook(rawRent: RentalsEntity) {
@@ -24,11 +27,17 @@ export class RentalService {
         try {
             await this.initDataBase.sqlRequest(`BEGIN`, [])
 
-            const book = (await this.utils.checkBook(rental.bookId)).rows[0]
+            const book = await this.booksService.getBook(rental.bookId)
 
-            if (book.available === 0) throw new Error('У пользователя книга, которой нет в наличии. Необходимо провести ревизию')
+            if (book[0].available <= 0) throw new Error('У пользователя книга, которой нет в наличии. Необходимо провести ревизию')
 
-            const customer = (await this.utils.checkCustomer(rental.customerId)).rows[0]
+            const customer = await this.customersService.getUser(rental.customerId)
+
+            await this.initDataBase.sqlRequest(`
+            UPDATE books SET available = available - 1 
+            WHERE bookId = $1
+            `, [rental.bookId]
+            )
 
             const rentalResponse = await this.initDataBase.sqlRequest(`
             INSERT INTO rentals(bookId, customerId, dateRented, dateReturned)
@@ -37,11 +46,7 @@ export class RentalService {
             `, [rental.bookId, rental.customerId, rental.dateRented, rental.dateReturned]
             )
 
-            await this.initDataBase.sqlRequest(`
-            UPDATE books SET available = available - 1
-            WHERE bookId = $1
-            `, [rental.bookId]
-            )
+
 
             await this.initDataBase.sqlRequest(`COMMIT`, [])
 
@@ -61,8 +66,18 @@ export class RentalService {
 
     }
 
-    async getRent() {
+    async getRent(rentalId: number) {
+        const rental = await this.initDataBase.sqlRequest(`
+        SELECT * FROM rentals
+        WHERE rentalId = $1
+        `, [rentalId]
+        )
 
+        if (!rental.length) {
+            throw new Error('Аренды нет')
+        }
+        console.log(rental)
+        return rental
     }
 
 }
