@@ -45,6 +45,8 @@ export class RentalService {
 
             await this.initDataBase.sqlRequest(`COMMIT`, [])
 
+            return rentalResponse
+
         } catch (error) {
             await this.initDataBase.sqlRequest(`ROLLBACK`, [])
             throw error
