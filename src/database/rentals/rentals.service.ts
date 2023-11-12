@@ -27,17 +27,21 @@ export class RentalService {
         try {
             await this.initDataBase.sqlRequest(`BEGIN`, [])
 
-            const book = await this.booksService.getBook(rental.bookId)
+            await this.booksService.getBook(rental.bookId) // проверка наличия книги
 
-            if (book[0].available <= 0) throw new Error('У пользователя книга, которой нет в наличии. Необходимо провести ревизию')
+            await this.customersService.getUser(rental.customerId) // проверка наличия юзера
 
-            const customer = await this.customersService.getUser(rental.customerId)
-
-            await this.initDataBase.sqlRequest(`
+            const updateResult = await this.initDataBase.sqlRequest(`
             UPDATE books SET available = available - 1 
-            WHERE bookId = $1
+            WHERE bookId = $1 AND available > 0
+            RETURNING *
             `, [rental.bookId]
             )
+
+            if (updateResult?.length <= 0) {
+                throw new Error('Обновление не выполнено, книга уже не доступна')
+            }
+
 
             const rentalResponse = await this.initDataBase.sqlRequest(`
             INSERT INTO rentals(bookId, customerId, dateRented, dateReturned)
