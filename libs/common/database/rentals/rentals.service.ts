@@ -27,15 +27,15 @@ export class RentalService {
         try {
             await this.initDataBase.sqlRequest(`BEGIN`, [])
 
-            await this.booksService.getBook(rental.bookId) // проверка наличия книги
+            await this.booksService.getBook(rental.book_id) // проверка наличия книги
 
-            await this.customersService.getUser(rental.customerId) // проверка наличия юзера
+            await this.customersService.getUser(rental.customer_id) // проверка наличия юзера
 
             const updateResult = await this.initDataBase.sqlRequest(`
             UPDATE books SET available = available - 1 
-            WHERE bookId = $1 AND available > 0
+            WHERE book_id = $1 AND available > 0
             RETURNING *
-            `, [rental.bookId]
+            `, [rental.book_id]
             )
 
             if (updateResult?.length <= 0) {
@@ -44,13 +44,16 @@ export class RentalService {
 
 
             const rentalResponse = await this.initDataBase.sqlRequest(`
-            INSERT INTO rentals(bookId, customerId, dateRented, dateReturned)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO rentals(book_id, customer_id, date_rented, date_returned, date_of_expire)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING *
-            `, [rental.bookId, rental.customerId, rental.dateRented, rental.dateReturned]
+            `, [
+                rental.book_id,
+                rental.customer_id,
+                rental.date_rented,
+                rental.date_returned
+            ]
             )
-
-
 
             await this.initDataBase.sqlRequest(`COMMIT`, [])
 
@@ -73,7 +76,7 @@ export class RentalService {
     async getRent(rentalId: number) {
         const rental = await this.initDataBase.sqlRequest(`
         SELECT * FROM rentals
-        WHERE rentalId = $1
+        WHERE rental_id = $1
         `, [rentalId]
         )
 
