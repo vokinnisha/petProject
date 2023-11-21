@@ -15,8 +15,7 @@ export class InitDataBase {
         })
     }
 
-
-    async sqlRequest(sql: string, param: any[]) {
+    async sqlRequest(sql: string, param: any[] = []) {
         const response = await this.client.query(sql, param);
 
         return response.rows

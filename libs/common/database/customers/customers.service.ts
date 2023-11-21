@@ -18,17 +18,24 @@ export class CustomerService {
         const validateError = await validate(user)
 
         if (validateError.length > 0) {
+            console.log(validateError)
             throw new Error('Ошибка валидации, проверьте ваш JSON или обратитесь к администратору')
         }
 
-        const sql = `
-        INSERT INTO customers(firstName, lastName, birthDate, email, phone, socialLogin)
+        const params = [
+            user.first_name,
+            user.last_name,
+            user.birth_date,
+            user.email,
+            user.phone,
+            user.social_login
+        ]
+
+        return await this.initDataBase.sqlRequest(`
+        INSERT INTO customers(first_name, last_name, birth_date, email, phone, social_login)
         VALUES($1, $2, $3, $4, $5, $6)
         RETURNING *
-        `
-        const params = [user.firstName, user.lastName, user.birthDate, user.email, user.phone, user.socialLogin]
-
-        return await this.initDataBase.sqlRequest(sql, params)
+        `, params)
     }
 
     async updateUser() {
@@ -42,7 +49,7 @@ export class CustomerService {
     async getUser(customerId: number) {
         const customer = await this.initDataBase.sqlRequest(`
         SELECT * FROM customers
-        WHERE customerId = $1
+        WHERE customer_id = $1
         `, [customerId]
         )
 
